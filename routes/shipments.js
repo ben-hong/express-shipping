@@ -1,8 +1,10 @@
 "use strict";
 
+const { BadRequestError } = require("../expressError");
 const express = require("express");
+const jsonschema = require("jsonschema");
+const shipitSchema = require("../schemas/shipitSchema.json");
 const router = new express.Router();
-
 const { shipProduct } = require("../shipItApi");
 
 /** POST /ship
@@ -14,8 +16,12 @@ const { shipProduct } = require("../shipItApi");
  */
 
 router.post("/", async function (req, res, next) {
-  const { productId, name, addr, zip } = req.body;
-  const shipId = await shipProduct({ productId, name, addr, zip });
+  const result = jsonschema.validate(req.body, shipitSchema);
+  if (!result.valid) {
+    let errs = result.errors.map(err => err.stack);
+    throw new BadRequestError(errs);
+  }
+  let shipId = await shipProduct(result.instance);
   return res.json({ shipped: shipId });
 });
 
