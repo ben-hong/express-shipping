@@ -25,7 +25,7 @@ async function shipProduct({ productId, name, addr, zip }) {
       key: SHIPIT_API_KEY
     },
   });
-
+  console.log('shipId here', resp.data.receipt.shipId);
   return resp.data.receipt.shipId;
 }
 
